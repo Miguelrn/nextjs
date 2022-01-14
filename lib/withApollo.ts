@@ -6,29 +6,48 @@ import { concatPagination } from '@apollo/client/utilities'
 import merge from 'deepmerge'
 import { isEqual } from 'lodash'
 import { NormalizedCacheObject } from '@apollo/client/cache';
+import { setContext } from "apollo-link-context";
 
 export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__'
 
 let apolloClient: ApolloClient<NormalizedCacheObject> | null = null;
 
-function createApolloClient() {
+interface Options {
+  getToken: () => string;
+}
 
-    return new ApolloClient({
-        ssrMode: typeof window === 'undefined',
-        link: new HttpLink({
-            uri: "http://localhost:3000/api/graphql",
-            credentials: "include"
-        }),
-        cache: new InMemoryCache({
-            typePolicies: {
-                Query: {
-                    fields: {
-                        allPosts: concatPagination(),
-                    },
-                },
-            },
-        }),
-    })
+function createApolloClient() { // { getToken }: Options
+  // const httpLink = new HttpLink({
+  //   uri: "http://localhost:3000/api/graphql",
+  //   credentials: "include"
+  // });
+
+  // const authLink = setContext((_, { headers }) => {
+  //   const token = getToken();
+  //   return {
+  //     headers: {
+  //       ...headers,
+  //       cookie: token ? `qid=${token}` : ""
+  //     }
+  //   };
+  // });
+
+  return new ApolloClient({
+      ssrMode: typeof window === 'undefined',
+      link: new HttpLink({
+          uri: "http://localhost:3000/api/graphql",
+          credentials: "include"
+      }),
+      cache: new InMemoryCache({
+          typePolicies: {
+              Query: {
+                  fields: {
+                      allPosts: concatPagination(),
+                  },
+              },
+          },
+      }),
+  })
 }
 
 export function initializeApollo(initialState = null) {
